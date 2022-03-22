@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@mocks/*": [
+        "_mocks/*"
+      ],
+      "@stb/*": [
+        "_storybook/*"
+      ]
+    }
+  }
+}

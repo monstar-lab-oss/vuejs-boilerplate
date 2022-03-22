@@ -1,0 +1,19 @@
+{
+    "createAccount": "Create account",
+    "completed": "Completed",
+    "fetchData": "Fetch Data",
+    "email": "Email",
+    "emailAlreadyExists": "Email address already exists",
+    "footer": "Footer ©2021",
+    "home": "Home",
+    "logIn": "Log in",
+    "password": "Password",
+    "userName": "User name",
+    "signUp": "Sign up",
+    "submit": "Submit",
+    "next": "Next",
+    "results": "{{total}} results",
+    "users": "Users",
+    "verify": "Verify",
+    "welcome": "Welcome, {{name}}!"
+}

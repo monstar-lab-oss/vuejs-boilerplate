@@ -1,0 +1,63 @@
+{
+  "name": "vue3",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vite preview",
+    "build": "vite build",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
+    "dev": "vite",
+    "msw": "vite --mode msw",
+    "storybook": "start-storybook -p 6006 -c _storybook",
+    "build-storybook": "build-storybook -c _storybook"
+  },
+  "dependencies": {
+    "@mdi/font": "5.9.55",
+    "roboto-fontface": "*",
+    "vue": "^3.0.0",
+    "vue-class-component": "^8.0.0-0",
+    "vue-i18n": "^9.2.0-beta.30",
+    "vue-router": "^4.0.0-0",
+    "vuetify": "^3.0.0-beta.0",
+    "vuex": "^4.0.0-0",
+    "webfontloader": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.12",
+    "@storybook/addon-a11y": "^6.4.19",
+    "@storybook/addon-actions": "^6.5.0-alpha.28",
+    "@storybook/addon-essentials": "^6.5.0-alpha.28",
+    "@storybook/addon-interactions": "^6.4.19",
+    "@storybook/addon-links": "^6.5.0-alpha.28",
+    "@storybook/jest": "^0.0.10",
+    "@storybook/testing-library": "^0.0.9",
+    "@storybook/vue3": "^6.5.0-alpha.28",
+    "@types/vue-i18n": "^7.0.0",
+    "@types/webfontloader": "^1.6.34",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "@vitejs/plugin-vue": "^2.1.0",
+    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/eslint-config-airbnb": "^5.0.2",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "@vuetify/vite-plugin": "^1.0.0-alpha.10",
+    "babel-loader": "^8.2.3",
+    "eslint": "8",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-vue": "8",
+    "msw": "^0.36.8",
+    "msw-storybook-addon": "^1.6.0",
+    "sass": "^1.38.0",
+    "sass-loader": "^10.0.0",
+    "storybook-builder-vite": "^0.1.14",
+    "storybook-vue3-router": "^2.2.1",
+    "typescript": "~4.1.5",
+    "vite": "^2.7.13",
+    "vue-cli-plugin-vuetify": "~2.4.8",
+    "vue-loader": "^16.8.3",
+    "vuetify-loader": "^2.0.0-alpha.0"
+  },
+  "msw": {
+    "workerDirectory": "public"
+  }
+}

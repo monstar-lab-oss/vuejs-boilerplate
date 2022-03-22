@@ -1,0 +1,21 @@
+.sb-show-main {
+  &.sb-main-fullscreen {
+    display: flex;
+  }
+  &.sb-main-padded {
+    display: flex;
+    .v-application {
+      background: transparent;
+    }
+  }
+  .v-app-bar {
+    position: fixed !important;
+  }
+}
+
+
+#root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
