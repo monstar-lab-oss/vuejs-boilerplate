@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vite preview",
     "build": "vite build",
+    "build:development": "vite build --mode development",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src",
     "dev": "vite",
     "msw": "vite --mode msw",

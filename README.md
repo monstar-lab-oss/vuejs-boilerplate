@@ -29,6 +29,11 @@ yarn msw
 yarn build
 ```
 
+### Compiles and minifies for development
+```
+yarn build:development
+```
+
 ### Lints and fixes files
 ```
 yarn lint
