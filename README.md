@@ -68,7 +68,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 - [x] i18n
 - [x] env
 - [ ] modals
-- [ ] build
+- [x] build
 - [ ] storybook
   - [x] vite
   - [x] mdx (class or className?)

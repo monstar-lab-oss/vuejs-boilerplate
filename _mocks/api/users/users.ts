@@ -5,7 +5,7 @@ import { Users } from "@/models/users.types";
 import users from "./users.json";
 
 export const usersGetHandler = rest.get<object, PathParams, Users>(
-  "https://reqres.in/api/users",
+  `${import.meta.env.VITE_API_HOST}users`,
   (req, res, ctx) => {
     return res(ctx.status(200), ctx.delay(500), ctx.json(users));
   }

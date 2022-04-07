@@ -2,7 +2,7 @@
 import { rest } from "msw";
 
 export const loginPostHandler = rest.post(
-  "https://reqres.in/api/login",
+  `${import.meta.env.VITE_API_HOST}login`,
   (req, res, ctx) => {
     return res(ctx.status(200), ctx.delay(500), ctx.json({}));
   }

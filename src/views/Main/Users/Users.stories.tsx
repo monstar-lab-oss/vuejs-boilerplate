@@ -31,7 +31,7 @@ export const NoResults = Template.bind({});
 NoResults.parameters = {
   msw: {
     handlers: [
-      rest.get("https://reqres.in/api/users", (req, res, ctx) => {
+      rest.get(`${import.meta.env.VITE_API_HOST}users`, (req, res, ctx) => {
         return res(ctx.delay(0), ctx.json({ total: 0 }));
       }),
     ],

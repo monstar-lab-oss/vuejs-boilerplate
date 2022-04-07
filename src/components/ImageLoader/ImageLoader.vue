@@ -48,7 +48,6 @@ export default defineComponent({
     watch(
       () => props.src,
       () => {
-        console.log('props');
         imgLoading.value = true;
         imgError.value = false;
       }
