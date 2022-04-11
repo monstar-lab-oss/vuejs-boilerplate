@@ -43,6 +43,12 @@ Submit.play = async context => {
   await userEvent.click(verifyBtn);
 };
 
+export const TestError = Start.bind({});
+TestError.play = async context => {
+  const testError = within(context.canvasElement).getByTestId('testError');
+  await expect(testError).toBeInTheDocument();
+};
+
 export default {
   title: "User flows/Log in",
   component: App,

@@ -48,6 +48,13 @@ yarn storybook
 ```
 yarn build-storybook
 ```
+
+### Storybook test
+```
+yarn storybook
+yarn test-storybook
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
@@ -82,7 +89,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
   - [ ] vuex
   - [ ] authentication
   - [x] play
-  - [ ] testing
+  - [x] testing
   - [ ] build
   - [ ] chromatic
 - [ ] linter
