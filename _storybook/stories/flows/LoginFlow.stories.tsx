@@ -1,5 +1,6 @@
 import { expect } from "@storybook/jest";
-import { within, waitFor } from "@storybook/testing-library";
+import { within } from "@storybook/testing-library";
+import { Meta, Story } from "@storybook/vue3";
 import vueRouter from "storybook-vue3-router";
 
 import App from "@app/App.vue";
@@ -9,21 +10,29 @@ import {
   sleep,
 } from "@stb/custom/customUserEvent/customUserEvent";
 
-export const Start = () => ({
+export default {
+  title: "User flows/Log in",
+  component: App,
+  parameters: {
+    layout: "fullscreen",
+  },
+  decorators: [
+    vueRouter(routes, {
+      initialRoute: "",
+    }),
+  ],
+} as Meta;
+
+const Default: Story = () => ({
   template: `<App />`,
-  components: { App }
-})
-Start.parameters = {
-  layout: "fullscreen",
-};
-Start.decorators = [
-  vueRouter(routes, {
-    initialRoute: ''
-  })
-]
+  components: { App },
+});
+
+export const Start = Default.bind({});
 
 export const Form = Start.bind({});
 Form.play = async context => {
+  await sleep();
   const canvas = within(context.canvasElement);
 
   const emailField = await canvas.getByLabelText('メール');
@@ -47,12 +56,4 @@ export const TestError = Start.bind({});
 TestError.play = async context => {
   const testError = within(context.canvasElement).getByTestId('testError');
   await expect(testError).toBeInTheDocument();
-};
-
-export default {
-  title: "User flows/Log in",
-  component: App,
-  parameters: {
-    layout: "fullscreen",
-  }
 };

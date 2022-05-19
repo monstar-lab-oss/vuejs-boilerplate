@@ -1,10 +1,15 @@
 import Login from "./Login.vue";
+import { Meta, Story } from "@storybook/vue3";
 
 import App from "@/App.vue";
 import vueRouter from "storybook-vue3-router";
 import { routes } from "@/router";
 
-const Template = (args: any) => ({
+export default {
+  title: "Pages/Login",
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { Login },
   setup() {
     return { args };
@@ -26,9 +31,3 @@ Page.decorators = [
 ]
 
 export const Default = Template.bind({});
-
-export default {
-  title: "Pages/Login",
-  component: Login,
-  args: {},
-};

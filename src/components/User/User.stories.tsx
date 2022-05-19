@@ -1,6 +1,18 @@
 import User from "./User.vue";
+import { Meta, Story } from "@storybook/vue3";
 
-const Template = (args: any) => ({
+export default {
+  title: "Components/User",
+  argTypes: {
+    backgroundColor: { control: "color" },
+    size: {
+      options: ["small", "medium", "large"],
+      control: "select",
+    },
+  },
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { User },
   setup() {
     return { args };
@@ -26,17 +38,4 @@ NoAvatar.args = {
 export const Loading = Template.bind({});
 Loading.args = {
   loading: true,
-};
-
-export default {
-  title: "Components/User",
-  component: User,
-  args: {},
-  argTypes: {
-    backgroundColor: { control: "color" },
-    size: {
-      options: ["small", "medium", "large"],
-      control: "select",
-    },
-  },
 };

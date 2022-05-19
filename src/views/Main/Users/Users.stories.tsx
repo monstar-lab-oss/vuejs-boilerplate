@@ -1,10 +1,15 @@
 import { routes } from "@/router";
+import { Meta, Story } from "@storybook/vue3";
 import App from "@/App.vue";
 import { rest } from "msw";
 import vueRouter from "storybook-vue3-router";
 import Users from "./Users.vue";
 
-const Template = (args: any) => ({
+export default {
+  title: "Pages/Main/Users",
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { Users },
   setup() {
     return { args };
@@ -36,10 +41,4 @@ NoResults.parameters = {
       }),
     ],
   },
-};
-
-export default {
-  title: "Pages/Main/Users",
-  component: Users,
-  args: {},
 };

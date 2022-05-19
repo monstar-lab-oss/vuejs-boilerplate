@@ -1,11 +1,11 @@
 import Footer from "./Footer.vue";
+import { Meta, Story } from "@storybook/vue3";
 
 export default {
   title: "components/Footer",
-  component: Footer,
-};
+} as Meta;
 
-const Template = (args: any) => ({
+const Template: Story = (args) => ({
   components: { Footer },
   setup() {
     return { args };

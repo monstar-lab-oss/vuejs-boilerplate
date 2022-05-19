@@ -1,9 +1,14 @@
 import { routes } from "@/router";
+import { Meta, Story } from "@storybook/vue3";
 import App from "@/App.vue";
 import vueRouter from "storybook-vue3-router";
 import NotFound from "./NotFound.vue";
 
-const Template = (args: any) => ({
+export default {
+  title: "Pages/404",
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { NotFound },
   setup() {
     return { args };
@@ -25,9 +30,3 @@ Page.decorators = [
 ]
 
 export const Default = Template.bind({});
-
-export default {
-  title: "Pages/404",
-  component: NotFound,
-  args: {},
-};

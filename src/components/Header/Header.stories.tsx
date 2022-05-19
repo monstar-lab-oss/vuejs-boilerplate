@@ -1,11 +1,11 @@
 import Header from "./Header.vue";
+import { Meta, Story } from "@storybook/vue3";
 
 export default {
   title: "components/Header",
-  component: Header,
-};
+} as Meta;
 
-const Template = (args: any) => ({
+const Template: Story = (args) => ({
   components: { Header },
   setup() {
     return { args };

@@ -1,9 +1,14 @@
 import { routes } from "@/router";
+import { Meta, Story } from "@storybook/vue3";
 import App from "@/App.vue";
 import vueRouter from "storybook-vue3-router";
 import Home from "./Home.vue";
 
-const Template = (args: any) => ({
+export default {
+  title: "Pages/Main/Home",
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { Home },
   setup() {
     return { args };
@@ -25,9 +30,3 @@ Page.decorators = [
 ]
 
 export const Default = Template.bind({});
-
-export default {
-  title: "Pages/Main/Home",
-  component: Home,
-  args: {},
-};

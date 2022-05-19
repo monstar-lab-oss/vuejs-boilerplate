@@ -1,7 +1,11 @@
-import { rest } from "msw";
+import { Meta, Story } from "@storybook/vue3";
 import ImageLoader from "./ImageLoader.vue";
 
-const Template = (args: any) => ({
+export default {
+  title: "Components/ImageLoader",
+} as Meta;
+
+const Template: Story = (args) => ({
   components: { ImageLoader },
   setup() {
     return { args };
@@ -12,10 +16,4 @@ const Template = (args: any) => ({
 export const Default = Template.bind({});
 Default.args = {
   src: "assets/images/7-image.jpg",
-};
-
-export default {
-  title: "Components/ImageLoader",
-  component: ImageLoader,
-  args: {},
 };
