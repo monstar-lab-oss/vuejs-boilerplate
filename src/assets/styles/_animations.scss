@@ -1,0 +1,28 @@
+@keyframes loading {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.fade_container {
+  display: flex;
+  overflow: hidden;
+  flex: 1;
+  > * {
+    width: 100%;
+  }
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition-duration: 200ms;
+  transition-property: height, opacity;
+  width: 100%;
+  flex-shrink: 0;
+}
+.fade-enter-active:nth-child(2) {
+  margin-left: -100%;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

@@ -1,0 +1,23 @@
+@mixin scrollBar {
+  overflow: auto;
+  overflow: overlay;
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 1rem;
+  }
+  &::-webkit-scrollbar-track {
+    display: none;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--v-theme-secondary));
+    border-radius: 9999px;
+  }
+}
+
+@mixin ellipsis($lines) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}

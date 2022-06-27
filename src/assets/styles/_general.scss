@@ -1,0 +1,23 @@
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  @include scrollBar;
+  &::-webkit-scrollbar-thumb {
+    background-color: #656a6d;
+  }
+}
+
+#app,
+.v-application,
+.v-application__wrap,
+.v-main,
+.v-main__wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.v-main {
+  padding-top: 4rem !important;
+}
