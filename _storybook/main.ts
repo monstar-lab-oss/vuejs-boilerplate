@@ -28,35 +28,21 @@ module.exports = {
   },
   framework: "@storybook/vue3",
   core: {
-    builder: "storybook-builder-vite",
+    builder: "@storybook/builder-vite",
   },
+
   async viteFinal(config) {
     return {
       ...config,
       plugins: [...config.plugins, require("@vitejs/plugin-vue")],
       resolve: {
-        alias: [
-          {
-            find: "vue",
-            replacement: "vue/dist/vue.esm-bundler.js",
-          },
-          {
-            find: "@",
-            replacement: path.resolve(__dirname, "../src"),
-          },
-          {
-            find: "@app",
-            replacement: path.resolve(__dirname, "../src"),
-          },
-          {
-            find: "@stb",
-            replacement: path.resolve(__dirname, "../_storybook"),
-          },
-          {
-            find: "@mocks",
-            replacement: path.resolve(__dirname, "../_mocks"),
-          },
-        ],
+        alias: {
+          vue: "vue/dist/vue.esm-bundler.js",
+          "@": path.resolve(__dirname, "../src"),
+          "@app": path.resolve(__dirname, "../src"),
+          "@stb": path.resolve(__dirname, "../_storybook"),
+          "@mocks": path.resolve(__dirname, "../_mocks"),
+        },
       },
     };
   },
