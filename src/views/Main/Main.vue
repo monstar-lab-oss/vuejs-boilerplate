@@ -11,10 +11,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
+import { onMounted } from "vue";
 import Header from "@/components/Header/Header.vue";
 
+onMounted(() => {
+  console.log("mounted", this);
+});
+/*
 export default defineComponent({
   name: "Main",
   components: {
@@ -24,6 +28,7 @@ export default defineComponent({
     console.log("mounted", this.$t("createAccount"));
   },
 });
+*/
 </script>
 
 

@@ -18,29 +18,22 @@
   </v-list-item>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent } from "vue";
+<script setup lang="ts">
+import { computed } from "vue";
 
-export default defineComponent({
-  name: "User",
-  props: {
-    avatar: String,
-    email: String,
-    loading: Boolean,
-    firstName: String,
-    lastName: String,
-  },
-  setup(props) {
-    const alt = computed(() => {
-      return (
-        (props.firstName ? props.firstName.substring(0, 1) : "") +
-        (props.lastName ? props.lastName.substring(0, 1) : "")
-      );
-    });
-    return {
-      alt,
-    };
-  },
+const props = defineProps({
+  avatar: String,
+  email: String,
+  loading: Boolean,
+  firstName: String,
+  lastName: String,
+});
+
+const alt = computed(() => {
+  return (
+    (props.firstName ? props.firstName.substring(0, 1) : "") +
+    (props.lastName ? props.lastName.substring(0, 1) : "")
+  );
 });
 </script>
 

@@ -13,38 +13,28 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onBeforeMount, ref } from "vue";
+<script setup lang="ts">
+import { onBeforeMount, ref } from "vue";
 import { Users } from "@/models/users.types";
 
-export default defineComponent({
-  name: "Users",
-  setup() {
-    const users = ref({} as Users);
-    const loading = ref(false);
+const users = ref({} as Users);
+const loading = ref(false);
 
-    async function fetchData() {
-      loading.value = false;
-      const url = `${import.meta.env.VITE_API_HOST}users`;
-      try {
-        const response = await fetch(url);
-        const json = await response.json();
-        users.value = json;
-        loading.value = false;
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log("error", error);
-      }
-    }
+async function fetchData() {
+  loading.value = false;
+  const url = `${import.meta.env.VITE_API_HOST}users`;
+  try {
+    const response = await fetch(url);
+    const json = await response.json();
+    users.value = json;
+    loading.value = false;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.log("error", error);
+  }
+}
 
-    onBeforeMount(() => {
-      fetchData();
-    });
-
-    return {
-      users,
-      loading,
-    };
-  },
+onBeforeMount(() => {
+  fetchData();
 });
 </script>

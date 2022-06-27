@@ -5,12 +5,7 @@
   </v-app-bar>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
-
-export default defineComponent({
-  name: "Header",
-});
+<script setup lang="ts">
 </script>
 
 <style scoped lang="scss"></style>

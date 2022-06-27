@@ -7,7 +7,7 @@
         <v-text-field
           v-model="email"
           variant="outlined"
-          :rules="[v => !!v || 'Item is required']"
+          :rules="[(v) => !!v || 'Item is required']"
           :label="$t('email')"
           data-testid="email"
           required
@@ -16,7 +16,7 @@
           v-model="password"
           type="password"
           variant="outlined"
-          :rules="[v => !!v || 'Item is required']"
+          :rules="[(v) => !!v || 'Item is required']"
           :label="$t('password')"
           data-testid="password"
           required
@@ -31,45 +31,32 @@
           :loading="isSubmitting"
           :disabled="isSubmitting"
           data-testid="loginBtn"
-        >{{ $t("logIn") }}</v-btn>
+          >{{ $t("logIn") }}</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-form>
 </template>
 
-<script lang="ts">
-import { useRouter } from 'vue-router'
-import { defineComponent, ref } from "vue";
+<script setup lang="ts">
+import { useRouter } from "vue-router";
+import { ref } from "vue";
 
-export default defineComponent({
-  name: "Login",
-  setup(this) {
-    const router = useRouter()
-    const formRef = ref();
-    const valid = ref(false);
-    const email = ref('');
-    const password = ref('');
-    const isSubmitting = ref(false);
+const router = useRouter();
+const formRef = ref();
+const valid = ref(false);
+const email = ref("");
+const password = ref("");
+const isSubmitting = ref(false);
 
-    function submit() {
-      (formRef?.value as any).validate().then((val: any) => {
-        if (val.valid) {
-          isSubmitting.value = true;
-          router.push({
-            name: 'Main'
-          });
-        }
-      })
+function submit() {
+  (formRef?.value as any).validate().then((val: any) => {
+    if (val.valid) {
+      isSubmitting.value = true;
+      router.push({
+        name: "Main",
+      });
     }
-
-    return {
-      formRef,
-      valid,
-      email,
-      password,
-      isSubmitting,
-      submit
-    };
-  },
-});
+  });
+}
 </script>

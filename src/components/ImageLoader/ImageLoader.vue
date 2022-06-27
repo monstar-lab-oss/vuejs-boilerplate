@@ -17,50 +17,42 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, watch } from "vue";
+<script setup lang="ts">
+import { ref, watch } from "vue";
 
-export default defineComponent({
-  name: "ImageLoader",
-  props: {
-    src: {
-      type: String,
-      default: "",
-    },
-    alt: {
-      type: String,
-      default: "",
-    },
-    loading: {
-      type: Boolean,
-      default: false,
-    },
+const props = defineProps({
+  src: {
+    type: String,
+    default: "",
   },
-  setup(props) {
-    const imgLoading = ref(true);
-    const imgError = ref(false);
-    function handleImageLoad() {
-      imgLoading.value = false;
-    }
-    function handleImageError() {
-      imgError.value = true;
-    }
-    watch(
-      () => props.src,
-      () => {
-        imgLoading.value = true;
-        imgError.value = false;
-      }
-    );
-
-    return {
-      imgLoading,
-      imgError,
-      handleImageLoad,
-      handleImageError,
-    };
+  alt: {
+    type: String,
+    default: "",
+  },
+  loading: {
+    type: Boolean,
+    default: false,
   },
 });
+
+const imgLoading = ref(true);
+const imgError = ref(false);
+
+function handleImageLoad() {
+  imgLoading.value = false;
+}
+
+function handleImageError() {
+  imgError.value = true;
+}
+
+watch(
+  () => props.src,
+  () => {
+    imgLoading.value = true;
+    imgError.value = false;
+  }
+);
 </script>
 
 <style lang="scss" scoped>
