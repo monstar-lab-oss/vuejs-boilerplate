@@ -13982,10 +13982,10 @@ vuetify-loader@^2.0.0-alpha.0:
     querystring "^0.2.1"
     upath "^2.0.1"
 
-vuetify@^3.0.0-beta.0:
-  version "3.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.0.0-beta.0.tgz#68a13159e8290786736aa907b1038e0de4c87338"
-  integrity sha512-/xDoSTs1l/s9jkFwQ5uK9ok9py0TsImRENA7DrAJnsgx5cwH9yEvS3XJOUOsH3ra+VYt5xZP7Pfh8/HtBQaAlw==
+vuetify@3.0.0-beta.12:
+  version "3.0.0-beta.12"
+  resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-3.0.0-beta.12.tgz#86c9226365b266e9c63157e79c6d4c536af9b7e4"
+  integrity sha512-OpNPZW1o+phyNzyLDD/d6TLzKXAGOOhq3B/Tbg2qtbrVBGN6cMVh1VVRIHSUp9IooIzyu/JRflrCsk80slTIPg==
 
 vuex@^4.0.0-0:
   version "4.0.2"
