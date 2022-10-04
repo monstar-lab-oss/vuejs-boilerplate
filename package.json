@@ -25,7 +25,7 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.12",
+    "@babel/core": "7.19.3",
     "@storybook/addon-a11y": "^6.5.9",
     "@storybook/addon-actions": "^6.5.9",
     "@storybook/addon-essentials": "^6.5.9",
@@ -45,7 +45,7 @@
     "@vue/eslint-config-airbnb": "^5.0.2",
     "@vue/eslint-config-typescript": "^7.0.0",
     "@vuetify/vite-plugin": "^1.0.0-alpha.10",
-    "babel-loader": "^8.2.3",
+    "babel-loader": "8.2.5",
     "eslint": "8",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-vue": "8",
