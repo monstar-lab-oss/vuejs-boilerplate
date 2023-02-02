@@ -1,34 +1,37 @@
 # Vue install guide
 
+## Contents
+***is optional**
+
 - [x] [vsc extensions](#extensions)
 - [x] [create vue](#create-vue)
 - [x] [prettier](#prettier)
 - [x] [.env files](#env-files)
 - [x] [typescript](#typescript)
 - [x] [plugins](#plugins)
-- [x] [webfonts](#webfonts)
+- [x] [webfonts](#webfonts)*
 - [x] [sass](#sass)
 - [ ] [axios](#axios)
 - [x] [example files](#example-files)
   - [x] [router](#router)
-  - [x] [transitions](#transitions)
-- [x] [vuetify](#vuetify)
-- [x] [ant design](#ant-design)
-- [x] [tailwind css](#tailwind-css)
-- [x] [pinia](#data-store)
-- [x] [i18n](#i18n)
-- [x] [vue query](#vue-query)
+  - [x] [transitions](#transitions)*
+- [x] [vuetify](#vuetify)*
+- [x] [ant design](#ant-design)*
+- [x] [tailwind css](#tailwind-css)*
+- [x] [pinia](#data-store)*
+- [x] [i18n](#i18n)*
+- [x] [vue query](#vue-query)*
   - [x] [rest]()
   - [ ] [graphql]()
-- [x] [msw](#msw)
+- [x] [msw](#msw)*
   - [x] [rest]()
   - [ ] [graphql]()
-- [ ] [vueuse](#vueuse)
-- [x] [unit tests](#unit-tests)
+- [ ] authentication
+- [x] [unit tests](#unit-tests)*
   - [x] [with msw](#with-msw)
-- [x] [e2e tests](#e2e-tests)
+- [x] [e2e tests](#e2e-tests)*
   - [x] [with msw](#with-msw-1)
-- [x] [storybook](#storybook)
+- [x] [storybook](#storybook)*
   - [x] [plugins](#plugins-1)
   - [x] [router](#router-1)
   - [x] [pinia](#pinia)
@@ -36,7 +39,9 @@
   - [x] [vue query](#vue-query-1)
   - [x] [msw](#msw-1)
   - [x] [tests](#e2e-tests-1)
+  - [ ] authentication
   - [x] [other addons](#other-addons)
+- [x] [other libraries](#other-libraries)
 - [x] [unused files](#unused-files-that-can-be-deleted)
 - [x] [folder structure](#folder-structure)
 
@@ -50,7 +55,6 @@
 - [ ] axios setup
 - [ ] authentication examples
 - [ ] graphql
-- [ ] pinia
 - [ ] storybook explanations in readme
 - [ ] fix tsconfig "class" error when adding .storybook to the includes
 
@@ -68,11 +72,11 @@ npm create vue@3
 
 Use the following settings:
 - Add TypeScript? **Yes**
-- Add JSX Support? **Yes**
+- Add JSX Support? **Yes***
 - Add Vue Router for Single Page Application development? **Yes**
-- Add Pinia for state management? **Yes**
-- Add Vitest for Unit Testing? **Yes**
-- Add an End-to-End Testing Solution? » - Use arrow-keys. Return to submit. **Playwright**
+- Add Pinia for state management? **Yes***
+- Add Vitest for Unit Testing? **Yes***
+- Add an End-to-End Testing Solution? » - Use arrow-keys. Return to submit. **Playwright***
 - Add ESLint for code quality? **Yes**
 - Add Prettier for code formatting? **Yes**
 
@@ -287,6 +291,10 @@ Create `src/views/ExampleView/ExampleView.vue`
 <template>
   <div>
     <h1>Example</h1>
+    <h2>Pinia</h2>
+    <div>count: {{ counter.count }}</div>
+    <button @click="counter.increment">Increment</button>
+    <h2>Api call</h2>
     <div v-if="query.isLoading">Loading...</div>
     <div v-else-if="query.isError">An error has occurred: {{ query.error }}</div>
     <div v-if="query.data">
@@ -300,6 +308,9 @@ import { onBeforeMount, ref } from 'vue'
 import axios from 'axios'
 import type { ExamplesGetResponse } from '@/models/examples.types'
 import ExampleComponent from '@/components/Example/ExampleComponent.vue'
+import { useCounterStore } from '@/stores/counter'
+
+const counter = useCounterStore()
 
 const query = ref()
 
@@ -512,6 +523,12 @@ plugins: [
 ],
 ```
 
+Update `src/views/ExampleView/ExampleView.vue`
+```diff
+- <button @click="counter.increment">Increment</button>
++ <v-btn @click="counter.increment">Increment</v-btn>
+```
+
 ## Ant design
 [Vue Ant design](https://antdv.com/docs/vue/introduce)
 ```sh
@@ -581,8 +598,6 @@ Update `tailwind.config.js`
 
 ## Data store
 [Pinia](https://pinia.vuejs.org/)
-
-[Setup](https://storybook.js.org/tutorials/intro-to-storybook/vue/en/data/)
 
 ## i18n
 [Vue i18n](https://vue-i18n.intlify.dev/)
@@ -677,6 +692,10 @@ Replace `src\views\ExampleView\ExampleView.vue`
 <template>
   <div>
     <h1>Example</h1>
+    <h2>Pinia</h2>
+    <div>count: {{ counter.count }}</div>
+    <button @click="counter.increment">Increment</button>
+    <h2>Api call</h2>
     <div v-if="query.isLoading">Loading...</div>
     <div v-else-if="query.isError">An error has occurred: {{ query.error }}</div>
     <div v-else-if="query.data">
@@ -691,6 +710,9 @@ import axios from 'axios'
 import { useQuery } from '@tanstack/vue-query'
 import type { ExamplesGetResponse } from '@/models/examples.types'
 import ExampleComponent from '@/components/Example/ExampleComponent.vue'
+import { useCounterStore } from '@/stores/counter'
+
+const counter = useCounterStore()
 
 const query = ref()
 
@@ -711,6 +733,11 @@ onBeforeMount(() => {
   })
 })
 </script>
+```
+With Vuetify, update `src/views/ExampleView/ExampleView.vue`
+```diff
+- <button @click="counter.increment">Increment</button>
++ <v-btn @click="counter.increment">Increment</v-btn>
 ```
 
 ## MSW
@@ -912,12 +939,6 @@ Update `package.json`
 ```
 *Launching with `yarn msw` will always use the mocks for api calls*
 
-## Vueuse
-[Vueuse](https://vueuse.org/)
-
-```sh
-yarn add @vueuse/core
-```
 
 ## Unit tests
 [Vue test utils](https://v1.test-utils.vuejs.org/)
@@ -1006,6 +1027,8 @@ Update `e2e/example/ExampleFlow.spec.ts`
 
 ## Storybook
 [Storybook](https://storybook.js.org/)
+
+[Storybook 7 を Vue 3 + TypeScript ではじめよう！](https://zenn.dev/sa2knight/books/storybook-7-with-vue-3)
 
 storybook 7+ is necessary, if it's not released yet use
 ```sh
@@ -1155,7 +1178,22 @@ export const Page: Story = {
 export const Default: Story = {}
 ```
 ### Pinia
-[Storybook pinia setup](https://storybook.js.org/tutorials/intro-to-storybook/vue/en/data/)
+Update `src/views/ExampleView/ExampleView.stories.ts`
+```diff
++ import { useCounterStore } from '@/stores/counter'
+
++ export const WithInitialCountOf10: Story = {
++ render: () => ({
++   components: { ExampleView },
++   setup() {
++     const counter = useCounterStore()
++     counter.count = 10
++     return {}
++   },
++   template: '<example-view />'
++ })
++}
+```
 
 ### i18n
 Update `.storybook/preview.ts`
@@ -1391,10 +1429,15 @@ Update `package.json`
 - [Designs](https://storybook.js.org/addons/storybook-addon-designs)
 - [Chromatic](https://storybook.js.org/addons/chromatic)
 
+## Other libraries
+- [Vueuse](https://vueuse.org/)
+- [dayjs](https://day.js.org/)
+- [echarts](https://github.com/ecomfe/vue-echarts)
+
 ## Unused files that can be deleted
 - e2e\vue.spec.ts
 - public\favicon.ico (replace with own)
-- styles (create own SMACCS structure if necessary)
+- styles (create [SMACSS](http://smacss.com/) structure if necessary)
   - src\assets\styles\base.css
   - src\assets\styles\main.css
 - src\assets\logo.svg
@@ -1408,54 +1451,54 @@ Update `package.json`
 - src/stories
 
 ## Folder structure
-- .mocks
+- .mocks*
   - api
   - handlers.ts
-- .storybook
+- .storybook*
   - main.ts
   - preview-head
   - preview.ts
-- e2e
+- e2e*
   - *testName*
     - *testName*.spec.ts
     - *testName*.stories.ts
 - public
   - favicon.ico
-  - mockServiceWorker.js
+  - mockServiceWorker.js*
 - src
   - assets
     - styles
-      - _transitions.scss
+      - _transitions.scss*
       - styles.scss
-      - tailwind.css
+      - tailwind.css*
     - images
   - components
     - *ComponentName*
-      - *ComponentName*.spec.ts
-      - *ComponentName*.stories.ts
+      - *ComponentName*.spec.ts*
+      - *ComponentName*.stories.ts*
       - *ComponentName*.vue
-  - locales
+  - locales*
     - *language*.json
   - models
     - *type*.types.ts
   - plugins
     - index.ts
-    - i18n.ts
-    - vuetify.ts
-    - webfontloader.ts
+    - i18n.ts*
+    - vuetify.ts*
+    - webfontloader.ts*
   - router
     - index.ts
-  - stores
+  - stores*
     - *storeName*.ts
   - views
     - *ViewName*View
-      - *ViewName*View.stories.ts
+      - *ViewName*View.stories.ts*
       - *ViewName*View.vue
   - App.vue
   - main.ts
 - .env
 - .env.example
-- .env.msw
+- .env.msw*
 - eslintrc.cjs
 - .gitattributes
 - .gitignore
@@ -1463,10 +1506,10 @@ Update `package.json`
 - env.d.ts
 - index.html
 - package-lock.json
-- playwright.config.ts
+- playwright.config.ts*
 - README.md
 - tsconfig.app.json
 - tsconfig.config.json
 - tsconfig.json
-- tsconfig.vitest.json
+- tsconfig.vitest.json*
 - yarn.lock
