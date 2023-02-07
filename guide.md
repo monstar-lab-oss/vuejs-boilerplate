@@ -21,12 +21,8 @@
 - [x] [pinia](#data-store)*
 - [x] [i18n](#i18n)*
 - [x] [vue query](#vue-query)*
-  - [x] [rest]()
-  - [ ] [graphql]()
 - [x] [msw](#msw)*
-  - [x] [rest]()
-  - [ ] [graphql]()
-- [ ] authentication
+- [x] [graphql](#graphql)*
 - [x] [unit tests](#unit-tests)*
   - [x] [with msw](#with-msw)
 - [x] [e2e tests](#e2e-tests)*
@@ -38,23 +34,25 @@
   - [x] [i18n](#i18n-1)
   - [x] [vue query](#vue-query-1)
   - [x] [msw](#msw-1)
+  - [x] [graphql](#graphql-1)
   - [x] [tests](#e2e-tests-1)
-  - [ ] authentication
   - [x] [other addons](#other-addons)
+- [ ] [authentication]()
 - [x] [other libraries](#other-libraries)
 - [x] [unused files](#unused-files-that-can-be-deleted)
 - [x] [folder structure](#folder-structure)
 
 ## Todos
+- [ ] type vue query responses and refactor graphql example
 - [ ] folder and file naming
 - [ ] write better test and align with storybook
-- [ ] access playwright with sophos enabled
+- [ ] fix playwright chromium with skysea (remove the `--disable-extensions` switch when launching chromium)
+- [ ] fix playwright firefox not using msw
 - [ ] test build
 - [ ] import .mocks data or hardcode in test
 - [ ] prettier differences with autoformat
 - [ ] axios setup
 - [ ] authentication examples
-- [ ] graphql
 - [ ] storybook explanations in readme
 - [ ] fix tsconfig "class" error when adding .storybook to the includes
 
@@ -144,6 +142,8 @@ export type ExamplesGetResponse = {
 ```
 
 ## Plugins
+*Create a separate plugins folder similar to vuetify cli*
+
 Create `src/plugins/index.ts`
 ```ts
 // Plugins
@@ -197,9 +197,7 @@ Create `src/plugins/webfontloader.ts`
  */
 
 export async function loadFonts() {
-  const webFontLoader = await import(
-    /* webpackChunkName: "webfontloader" */ 'webfontloader'
-  )
+  const webFontLoader = await import(/* webpackChunkName: "webfontloader" */ 'webfontloader')
 
   webFontLoader.load({
     google: {
@@ -424,7 +422,7 @@ Create `src/assets/styles/_transitions.scss`
   transition: opacity 0.2s ease;
 }
 
-.fade-enter-active:not(:first-child) {
+.fade-enter-active:not(:first-of-type) {
   margin-left: -100%;
 }
 
@@ -687,7 +685,7 @@ import { createPinia } from 'pinia'
 +   .use(VueQueryPlugin)
 ```
 
-Replace `src\views\ExampleView\ExampleView.vue`
+Replace `src/views/ExampleView/ExampleView.vue`
 ```vue
 <template>
   <div>
@@ -939,6 +937,154 @@ Update `package.json`
 ```
 *Launching with `yarn msw` will always use the mocks for api calls*
 
+## GraphQL
+Uses [vue-query](#vue-query) and [graphql-request](https://www.npmjs.com/package/graphql-request)
+
+
+```sh
+yarn add graphql-request
+```
+
+Update `.env`
+```diff
++ VITE_GRAPHQL_ENDPOINT=https://swapi-graphql.netlify.app/.netlify/functions/index
+```
+
+Update `src/models/examples.types.ts`
+```diff
++ export type ExampleGraphQL = {
++   title: string
++   releaseDate: string
++ }
++
++ export type ExamplesGraphQLResponse = {
++     allFilms: {
++     films: ExampleGraphQL[]
++   }
++ }
+```
+
+Create `src/views/ExampleGraphQLView/ExampleGraphQLView.vue`
+```vue
+<template>
+  <div>
+    <h1>GraphQL</h1>
+    <!-- Loading -->
+    <div v-if="query?.isLoading">Loading...</div>
+
+    <!-- Error -->
+    <div v-else-if="query?.isError">An error has occurred: {{ query.isError }}</div>
+
+    <!-- Result -->
+    <div v-else-if="query?.data">
+      <ul>
+        <li v-for="film of query.data.allFilms.films" :key="film.releaseDate">
+          {{ film.releaseDate }} {{ film.title }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- No result -->
+    <div v-else>No result</div>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { onBeforeMount, ref } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import { request, gql } from 'graphql-request'
+import type { ExamplesGraphQLResponse } from '@/models/examples.types'
+
+const query = ref()
+
+const EXAMPLES_QUERY = gql`
+  query ExampleFilms {
+    allFilms {
+      films {
+        title
+        releaseDate
+      }
+    }
+  }
+`
+
+onBeforeMount(() => {
+  query.value = useQuery({
+    queryKey: ['ExampleFilms'],
+    queryFn: async () => request<ExamplesGraphQLResponse>(import.meta.env.VITE_GRAPHQL_ENDPOINT, EXAMPLES_QUERY)
+  })
+})
+</script>
+```
+
+Update `src/router/index.ts`
+```diff
++ {
++   path: '/graphql',
++   name: 'graphql',
++     component: () => import('@/views/ExampleGraphQLView/ExampleGraphQLView.vue')
++ }
+```
+
+Update `src/App.vue`
+### Without vuetify
+```diff
++ <router-link to="/graphql">GraphQL</router-link>
+```
+
+### With vuetify
+```diff
++ <v-btn :to="{ name: 'graphql' }">GraphQL</v-btn>
+```
+
+### MSW
+Create `.mocks/graphql/exampleFilms/exampleFilms.json`
+```json
+{
+  "allFilms": {
+    "films": [
+      {
+        "title": "A New Hope",
+        "releaseDate": "1977-05-25"
+      },
+      {
+        "title": "The Empire Strikes Back",
+        "releaseDate": "1980-05-17"
+      },
+      {
+        "title": "Return of the Jedi",
+        "releaseDate": "1983-05-25"
+      }
+    ]
+  }
+}
+```
+
+Create `.mocks/graphql/exampleFilms/exampleFilms.ts`
+```ts
+import type { ExamplesGraphQLResponse } from '@/models/examples.types'
+import { graphql } from 'msw'
+
+import exampleFilms from './exampleFilms.json'
+
+export const exampleFilmsHandler = graphql.query<ExamplesGraphQLResponse>('ExampleFilms', (req, res, ctx) => {
+  return res(
+    ctx.delay(500),
+    ctx.data(exampleFilms)
+  )
+})
+
+export default exampleFilmsHandler
+```
+
+Update `.mocks/handlers.ts`
+```diff
++ import { exampleFilmsHandler } from './graphql/exampleFilms/exampleFilms'
+
+export const handlers = [
++ exampleFilmsHandler
+]
+```
 
 ## Unit tests
 [Vue test utils](https://v1.test-utils.vuejs.org/)
@@ -995,14 +1141,35 @@ Update `src/components/Example/ExampleComponent.spec.ts`
 npx playwright install
 ```
 
-delete `e2e/tsconfig.json`
-
-Update `tsconfig.app.json`
+Update `e2e/tsconfig.json` *.mocks and .storybook includes and paths are optional*
 ```diff
   "include": [
-+   "e2e/**/*",
-+   "e2e/**/*.vue"
+    "./**/*",
++   "../env.d.ts",
++   "../src/**/*",
++   "../src/**/*.vue",
++   "../src/**/*.json",
++   "../.mocks/**/*",
++   "../.mocks/**/*.json",
++   "../.storybook/**/*"
   ],
++ "compilerOptions": {
++   "rootDir": "../",
++   "composite": true,
++   "baseUrl": "../",
++   "paths": {
++     "@/*": [
++       "./src/*"
++     ],
++     "@mocks/*": [
++       ".mocks/*"
++     ],
++     "@stb/*": [
++       ".storybook/*"
++     ]
++   }
++ }
+}
 ```
 
 Create `e2e/example/ExampleFlow.spec.ts`
@@ -1024,6 +1191,7 @@ Update `e2e/example/ExampleFlow.spec.ts`
 - await expect(page.locator('div.examples h2').first()).toHaveText('sand dollar')
 + await expect(page.locator('div.examples h2').first()).toHaveText(`${examples.data[0].name}`)
 ```
+
 
 ## Storybook
 [Storybook](https://storybook.js.org/)
@@ -1354,6 +1522,90 @@ Update `src/components/Example/ExampleComponent.stories.ts`
 +   example: examples.data[0]
 ```
 
+### GraphQL
+Create `src\views\ExampleGraphQLView\ExampleGraphQLView.stories.ts`
+
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import router from '@/router'
+import { graphql } from 'msw'
+import exampleFilms from '@mocks/graphql/exampleFilms/exampleFilms.json'
+
+import ExampleGraphQLView from './ExampleGraphQLView.vue'
+import App from '@/App.vue'
+
+const meta: Meta<typeof ExampleGraphQLView> = {
+  title: 'Examples/GraphQLView',
+  component: ExampleGraphQLView,
+  render: () => ({
+    components: { ExampleGraphQLView },
+    template: '<example-graph-q-l-view />'
+  }),
+  tags: ['autodocs']
+}
+
+export default meta
+type Story = StoryObj<typeof ExampleGraphQLView>
+
+export const Page: Story = {
+  render: () => ({
+    components: { ExampleGraphQLView, App },
+    setup() {
+      router.replace('/graphql')
+    },
+    template: '<app><example-graph-q-l-view /></app>'
+  }),
+  parameters: {
+    layout: 'fullscreen'
+  }
+}
+
+export const Default: Story = {}
+
+export const OneResult: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        graphql.query('ExampleFilms', (req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.data({
+              allFilms: {
+                films: exampleFilms.allFilms.films.slice(0, 1)
+              }
+            })
+          )
+        })
+      ]
+    }
+  }
+}
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        graphql.query('ExampleFilms', (req, res, ctx) => {
+          return res(ctx.status(200), ctx.delay(999999), ctx.data({}))
+        })
+      ]
+    }
+  }
+}
+
+export const Error: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        graphql.query('ExampleFilms', (req, res, ctx) => {
+          return res(ctx.status(404))
+        })
+      ]
+    }
+  }
+}
+```
+
 ### e2e tests
 [Storybook interaction testing](https://storybook.js.org/docs/react/writing-tests/interaction-testing)
 ```sh
@@ -1378,7 +1630,7 @@ import router from '@/router'
 import { within, waitFor, userEvent } from '@storybook/testing-library'
 import { expect } from '@storybook/jest'
 
-import App from '../../src/App.vue'
+import App from '@/App.vue'
 
 const meta: Meta<typeof App> = {
   title: 'Examples/Flow',
@@ -1435,13 +1687,13 @@ Update `package.json`
 - [echarts](https://github.com/ecomfe/vue-echarts)
 
 ## Unused files that can be deleted
-- e2e\vue.spec.ts
-- public\favicon.ico (replace with own)
+- e2e/vue.spec.ts
+- public/favicon.ico (replace with own)
 - styles (create [SMACSS](http://smacss.com/) structure if necessary)
-  - src\assets\styles\base.css
-  - src\assets\styles\main.css
-- src\assets\logo.svg
-- src\components\__tests__ (tests are in the components/views folders)
+  - src/assets/styles/base.css
+  - src/assets/styles/main.css
+- src/assets/logo.svg
+- src/components/__tests__ (tests are in the components/views folders)
 - src/components/icons
 - src/components/HelloWorld.vue
 - Home page components after updating the home page
