@@ -43,7 +43,7 @@
 - [x] [folder structure](#folder-structure)
 
 ## Todos
-- [ ] type vue query responses and refactor graphql example
+- [ ] vue query response type and refactor graphql example
 - [ ] folder and file naming
 - [ ] write better test and align with storybook
 - [ ] fix playwright chromium with skysea (remove the `--disable-extensions` switch when launching chromium)
@@ -694,8 +694,13 @@ Replace `src/views/ExampleView/ExampleView.vue`
     <div>count: {{ counter.count }}</div>
     <button @click="counter.increment">Increment</button>
     <h2>Api call</h2>
+    <!-- Loading -->
     <div v-if="query.isLoading">Loading...</div>
+
+    <!-- Error -->
     <div v-else-if="query.isError">An error has occurred: {{ query.error }}</div>
+  
+    <!-- Result -->
     <div v-else-if="query.data">
       <ExampleComponent v-for="example in query.data.data" :key="example.id" :example="example" class="examples" />
     </div>
@@ -706,13 +711,29 @@ Replace `src/views/ExampleView/ExampleView.vue`
 import { onBeforeMount, ref } from 'vue'
 import axios from 'axios'
 import { useQuery } from '@tanstack/vue-query'
+import type { QueryObserverResult } from '@tanstack/vue-query'
 import type { ExamplesGetResponse } from '@/models/examples.types'
 import ExampleComponent from '@/components/Example/ExampleComponent.vue'
 import { useCounterStore } from '@/stores/counter'
 
+/*
+The `useQuery` type is `UseQueryReturnType` but causes the template to expect
+`query.data.value` instead of `query.data.data` as is returned by `useQuery`
+
+import type { UseQueryReturnType } from '@tanstack/vue-query'
+const query = ref<UseQueryReturnType<ExamplesGetResponse, Error>>()
+
+onBeforeMount(() => {
+  query.value = useQuery<ExamplesGetResponse, Error>({
+    queryKey: ['exampleFetch'],
+    queryFn: exampleFetch
+  })
+})
+*/
+
 const counter = useCounterStore()
 
-const query = ref()
+const query = ref<QueryObserverResult<ExamplesGetResponse, Error>>()
 
 const exampleFetch = async (): Promise<ExamplesGetResponse[]> => {
   try {
@@ -728,7 +749,7 @@ onBeforeMount(() => {
   query.value = useQuery({
     queryKey: ['exampleFetch'],
     queryFn: exampleFetch
-  })
+  }) as unknown as QueryObserverResult<ExamplesGetResponse, Error>
 })
 </script>
 ```
@@ -992,10 +1013,26 @@ Create `src/views/ExampleGraphQLView/ExampleGraphQLView.vue`
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
+import type { QueryObserverResult } from '@tanstack/vue-query'
 import { request, gql } from 'graphql-request'
 import type { ExamplesGraphQLResponse } from '@/models/examples.types'
 
-const query = ref()
+/*
+The `useQuery` type is `UseQueryReturnType` but causes the template to expect
+`query.data.value` instead of `query.data.allFilms` as is returned by `useQuery`
+
+import type { UseQueryReturnType } from '@tanstack/vue-query'
+const query = ref<UseQueryReturnType<ExamplesGraphQLResponse, Error>>()
+
+onBeforeMount(() => {
+  query.value = useQuery<ExamplesGraphQLResponse, Error>({
+    queryKey: ['ExampleFilms'],
+    queryFn: async () => request(import.meta.env.VITE_GRAPHQL_ENDPOINT, EXAMPLES_QUERY)
+  })
+})
+*/
+
+const query = ref<QueryObserverResult<ExamplesGraphQLResponse, Error>>()
 
 const EXAMPLES_QUERY = gql`
   query ExampleFilms {
@@ -1009,10 +1046,10 @@ const EXAMPLES_QUERY = gql`
 `
 
 onBeforeMount(() => {
-  query.value = useQuery({
+  query.value = useQuery<ExamplesGraphQLResponse, Error>({
     queryKey: ['ExampleFilms'],
-    queryFn: async () => request<ExamplesGraphQLResponse>(import.meta.env.VITE_GRAPHQL_ENDPOINT, EXAMPLES_QUERY)
-  })
+    queryFn: async () => request(import.meta.env.VITE_GRAPHQL_ENDPOINT, EXAMPLES_QUERY)
+  }) as unknown as QueryObserverResult<ExamplesGraphQLResponse, Error>
 })
 </script>
 ```
