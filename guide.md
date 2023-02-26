@@ -1,5 +1,6 @@
 # Vue install guide
-The following guide helps set up a vue 3 project with the most commonly used libraries.
+This guide helps set up a vue 3 project with the most commonly used libraries. It includes api (`REST` and `GraphQL`), `mock api`, `authentication`, `design libraries`, `authentication`, `i18n` and `storybook`.
+The file structure of `create vue` is kept, except for the plugins, which are moved to a dedicated folder.
 ## Contents
 ***is optional**
 
@@ -58,7 +59,8 @@ The following guide helps set up a vue 3 project with the most commonly used lib
 - [ ] storybook explanations in readme
 - [ ] fix tsconfig "class" error when adding .storybook to the includes
 - [ ] refactor roles update in storybook
-- [ ] error pages
+- [ ] pinia shared state `Cannot stringify arbitrary non-POJOs` error
+
 ## VSC extensions
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 - [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
@@ -356,8 +358,21 @@ onBeforeMount(() => {
 ### Router
 [Vue router](https://router.vuejs.org/)
 
+Create `src/views/NotFoundView/NotFoundView.vue`
+```vue
+<template>
+  <div>
+    <h1>404 Error</h1>
+  </div>
+</template>
+
+<script lang="ts" setup />
+```
+
 Update `src/router/index.ts`
 ```diff
++ import NotFoundView from '@/views/NotFoundView/NotFoundView.vue'
+
 [
 -  {
 -   path: '/about',
@@ -371,7 +386,12 @@ Update `src/router/index.ts`
 +   path: '/example',
 +   name: 'example',
 +   component: () => import('@/views/ExampleView/ExampleView.vue')
-+  }
++ },
++ {
++   path: '/:pathMatch(.*)*',
++   name: 'notFound',
++   component: NotFoundView
++ }
 ]
 ```
 
@@ -1292,9 +1312,9 @@ Update `e2e/example/ExampleFlow.spec.ts`
 ## Storybook
 [Storybook](https://storybook.js.org/)
 
-[Storybook 7 を Vue 3 + TypeScript ではじめよう！](https://zenn.dev/sa2knight/books/storybook-7-with-vue-3)
+Guide: [Storybook 7 を Vue 3 + TypeScript ではじめよう！](https://zenn.dev/sa2knight/books/storybook-7-with-vue-3)(Japanese only)
 
-storybook 7+ is necessary, if it's not released yet use
+*At the time of writing Storybook 7 is still in beta, so `sb@next` needs to be used.*
 ```sh
 npx sb@next init
 ```
@@ -1441,6 +1461,43 @@ export const Page: Story = {
 
 export const Default: Story = {}
 ```
+
+Create `src/views/NotFoundView/NotFoundView.stories.ts`
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import router from '@/router'
+
+import NotFoundView from './NotFoundView.vue'
+import App from '@/App.vue'
+
+const meta: Meta<typeof NotFoundView> = {
+  title: 'Views/Not Found',
+  component: NotFoundView,
+  render: () => ({
+    components: { NotFoundView },
+    template: '<not-found-view />'
+  })
+}
+
+export default meta
+type Story = StoryObj<typeof NotFoundView>
+
+export const Page: Story = {
+  render: () => ({
+    components: { NotFoundView, App },
+    setup() {
+      router.replace('/404')
+    },
+    template: '<app><not-found-view /></app>'
+  }),
+  parameters: {
+    layout: 'fullscreen'
+  }
+}
+
+export const Default: Story = {}
+```
+
 ### Pinia
 Update `src/views/ExampleView/ExampleView.stories.ts`
 ```diff
@@ -1724,9 +1781,6 @@ stories: [
     '../src/**/*.stories.@(js|jsx|ts|tsx)'
 +   '../e2e/**/*.stories.@(js|jsx|ts|tsx)'
   ],
-+  features: {
-+   interactionsDebugger: true
-+ },
 ```
 
 Create `e2e/example/ExampleFlow.stories.tsx`
@@ -1783,14 +1837,15 @@ Update `package.json`
   },
 ```
 ### Other addons
-- [Accessibility](https://storybook.js.org/addons/@storybook/addon-a11y)
-- [Designs](https://storybook.js.org/addons/storybook-addon-designs)
+- [Accessibility tab](https://storybook.js.org/addons/@storybook/addon-a11y)
+- [Design tab](https://storybook.js.org/addons/storybook-addon-designs)
 - [Chromatic](https://storybook.js.org/addons/chromatic)
 
 ## Authentication
 Authentication boilerplate:
+- Pinia is used for the login state, tokens and user role
 - REST with authorization header
-- Token and refresh token
+- Token and refresh token (saved in local storage)
 - Route guards
 - Multiple user roles
 - Implementation in storybook with a role menu in the toolbar
@@ -2403,10 +2458,12 @@ export const handlers = [
 + exampleLoggedInGetHandler,
 ```
 ### Storybook
+*At the time of writing Storybook 7 is still in beta, so `@next` needs to be added.*
 ```sh
 yarn add -D @storybook/client-api@next
 ```
 
+*Storybook doesn't automatically refresh the story after changing the role, so this functionality is included here. These might not be necessary in future versions.*
 Update `.storybook/preview.ts`
 ```diff
 + import { useAuthStore } from '@/stores/auth'
