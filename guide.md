@@ -1,5 +1,5 @@
 # Vue install guide
-
+The following guide helps set up a vue 3 project with the most commonly used libraries.
 ## Contents
 ***is optional**
 
@@ -11,7 +11,7 @@
 - [x] [plugins](#plugins)
 - [x] [webfonts](#webfonts)*
 - [x] [sass](#sass)
-- [ ] [axios](#axios)
+- [x] [axios](#axios)
 - [x] [example files](#example-files)
   - [x] [router](#router)
   - [x] [transitions](#transitions)*
@@ -19,6 +19,7 @@
 - [x] [ant design](#ant-design)*
 - [x] [tailwind css](#tailwind-css)*
 - [x] [pinia](#data-store)*
+  - [x] [share state across tabs](#share-store-state-across-tabs)*
 - [x] [i18n](#i18n)*
 - [x] [vue query](#vue-query)*
 - [x] [msw](#msw)*
@@ -37,7 +38,10 @@
   - [x] [graphql](#graphql-1)
   - [x] [tests](#e2e-tests-1)
   - [x] [other addons](#other-addons)
-- [ ] [authentication]()
+- [x] [authentication](#authentication)
+  - [x] [vuetify](#vuetify-1)
+  - [x] [msw](#msw-3)
+  - [x] [storybook](#storybook-1)
 - [x] [other libraries](#other-libraries)
 - [x] [unused files](#unused-files-that-can-be-deleted)
 - [x] [folder structure](#folder-structure)
@@ -51,11 +55,10 @@
 - [ ] test build
 - [ ] import .mocks data or hardcode in test
 - [ ] prettier differences with autoformat
-- [ ] axios setup
-- [ ] authentication examples
 - [ ] storybook explanations in readme
 - [ ] fix tsconfig "class" error when adding .storybook to the includes
-
+- [ ] refactor roles update in storybook
+- [ ] error pages
 ## VSC extensions
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 - [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
@@ -247,6 +250,19 @@ Update `src/plugins/index.ts`
 yarn add axios
 ```
 
+Create `src/services/api.service.ts`
+```ts
+import axios from 'axios'
+
+// api without authorization header
+export const oApi = axios.create({
+  baseURL: import.meta.env.VITE_API_HOST,
+  headers: { 'Content-Type': 'application/json' }
+})
+
+export default oApi
+```
+
 ## Example files
 Create `src/components/Example/ExampleComponent.vue`
 ```vue
@@ -303,7 +319,7 @@ Create `src/views/ExampleView/ExampleView.vue`
 
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import axios from 'axios'
+import oApi from '@/services/api.service'
 import type { ExamplesGetResponse } from '@/models/examples.types'
 import ExampleComponent from '@/components/Example/ExampleComponent.vue'
 import { useCounterStore } from '@/stores/counter'
@@ -315,11 +331,11 @@ const query = ref()
 async function getExample() {
   try {
     query.value = { isLoading: true }
-    const { data } = await axios.get<ExamplesGetResponse>(`${import.meta.env.VITE_API_HOST}examples`)
+    const { data } = await oApi.get<ExamplesGetResponse>(`${import.meta.env.VITE_API_HOST}examples`)
     query.value = data
     return data
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (oApi.isAxiosError(error)) {
       query.value = { isError: error.message }
       console.log('error message: ', error.message)
       return error.message
@@ -596,6 +612,28 @@ Update `tailwind.config.js`
 
 ## Data store
 [Pinia](https://pinia.vuejs.org/)
+### Share store state across tabs
+Add [pinia-shared-state](https://www.npmjs.com/package/pinia-shared-state)
+```sh
+yarn add pinia-shared-state
+```
+Create `src/plugins/pinia.ts`
+```ts
+import { createPinia } from 'pinia'
+import { PiniaSharedState } from 'pinia-shared-state'
+
+const pinia = createPinia().use(PiniaSharedState({}))
+
+export default pinia
+```
+Update `src/plugins/index.ts`
+```diff
+- import { createPinia } from 'pinia'
++ import pinia from './pinia'
+
+- .use(createPinia())
++ .use(pinia)
+```
 
 ## i18n
 [Vue i18n](https://vue-i18n.intlify.dev/)
@@ -655,13 +693,23 @@ import { createPinia } from 'pinia'
 Update `src/App.vue`
 ### Without Vuetify
 ```diff
-      </nav>
-+     <select v-model="$i18n.locale">
-+       <option v-for="locale in $i18n.availableLocales" :key="`locale-${locale}`" :value="locale">
-+         {{ locale }}
-+       </option>
-+     </select>
-    </div>
++  <v-menu>
++     <template v-slot:activator="{ props }">
++       <v-btn icon="mdi-translate" v-bind="props"></v-btn>
++     </template>
++     <v-list>
++       <v-list-item
++         v-for="(locale, index) in $i18n.availableLocales"
++         :key="index"
++         :value="locale"
++         :variant="$i18n.locale === locale ? 'tonal' : 'plain'"
++         @click="$i18n.locale = locale"
++       >
++         <v-list-item-title>{{ locale }}</v-list-item-title>
++       </v-list-item>
++     </v-list>
++   </v-menu>
++ </v-toolbar>
 ```
 ### With Vuetify
 ```diff
@@ -676,13 +724,24 @@ Update `src/App.vue`
 yarn add @tanstack/vue-query
 ```
 
+Create `src/plugins/vuequery.ts`
+```ts
+import { VueQueryPlugin } from '@tanstack/vue-query'
+
+const vueQuery = (): [any] => {
+  return [VueQueryPlugin]
+}
+
+export default vueQuery
+```
+
 Update `src/plugins/index.ts`
 ```diff
-import { createPinia } from 'pinia'
-+ import { VueQueryPlugin } from '@tanstack/vue-query'
+// Plugins
++ import vueQuery from './vuequery'
 
     .use(pinia)
-+   .use(VueQueryPlugin)
++   .use(...vueQuery)
 ```
 
 Replace `src/views/ExampleView/ExampleView.vue`
@@ -709,7 +768,7 @@ Replace `src/views/ExampleView/ExampleView.vue`
 
 <script lang="ts" setup>
 import { onBeforeMount, ref } from 'vue'
-import axios from 'axios'
+import oApi from '@/services/api.service'
 import { useQuery } from '@tanstack/vue-query'
 import type { QueryObserverResult } from '@tanstack/vue-query'
 import type { ExamplesGetResponse } from '@/models/examples.types'
@@ -737,7 +796,7 @@ const query = ref<QueryObserverResult<ExamplesGetResponse, Error>>()
 
 const exampleFetch = async (): Promise<ExamplesGetResponse[]> => {
   try {
-    const response = await axios.get(`${import.meta.env.VITE_API_HOST}examples`)
+    const response = await oApi.get(`${import.meta.env.VITE_API_HOST}examples`)
     return response.data
   } catch (error) {
     console.error(error)
@@ -1332,7 +1391,7 @@ Modify `.storybook/preview.ts`
 + import { setup } from '@storybook/vue3'
 + import { registerPlugins } from '@/plugins'
 + 
-+ setup((app) => {
++ setup((app: any) => {
 +   // Registers your app's plugins into Storybook
 +   registerPlugins(app)
 + });
@@ -1427,22 +1486,32 @@ Update `.storybook/preview.ts`
 ### Vue Query
 *This prevents vue query to retry on fail.*
 
+Update `src/plugins/vuequery.ts`
+```diff
+- const vueQuery = (): [any] => {
+-   return [VueQueryPlugin]
++ const vueQuery = (retry: boolean): [any, any] => {
++   return [
++     VueQueryPlugin,
++     {
++       queryClientConfig: {
++         defaultOptions: {
++           queries: {
++             retry
++           }
++         }
++       }
++     }
++   ]
+```
+
 Update `src/plugins/index.ts`
 ```diff
 - export function registerPlugins(app: App) {
 + export function registerPlugins(app: App, vueQueryRetry = true) {
-+ const vueQueryPluginOptions = {
-+   queryClientConfig: {
-+     defaultOptions: {
-+       queries: {
-+         retry: vueQueryRetry
-+       }
-+     }
-+   }
-+ }
 
--   .use(VueQueryPlugin)
-+   .use(VueQueryPlugin, vueQueryPluginOptions)
+-   .use(...vueQuery)
++   .use(...vueQuery(vueQueryRetry))
 }
 ```
 
@@ -1560,7 +1629,7 @@ Update `src/components/Example/ExampleComponent.stories.ts`
 ```
 
 ### GraphQL
-Create `src\views\ExampleGraphQLView\ExampleGraphQLView.stories.ts`
+Create `src/views/ExampleGraphQLView/ExampleGraphQLView.stories.ts`
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3'
@@ -1718,6 +1787,768 @@ Update `package.json`
 - [Designs](https://storybook.js.org/addons/storybook-addon-designs)
 - [Chromatic](https://storybook.js.org/addons/chromatic)
 
+## Authentication
+Authentication boilerplate:
+- REST with authorization header
+- Token and refresh token
+- Route guards
+- Multiple user roles
+- Implementation in storybook with a role menu in the toolbar
+
+Create `src/constants/auth.constants.ts`
+```ts
+export enum RolesEnum {
+  VISITOR = '',
+  USER = 'user',
+  ADMIN = 'admin'
+}
+
+export enum AccessDeniedPageErrorEnum {
+  OK = '',
+  NOT_LOGGED_IN = 'notLoggedIn',
+  INSUFFICIENT_PERMISSIONS = 'insufficientPermissions'
+}
+```
+Create `src/models/auth.types.ts`
+```ts
+import { AccessDeniedPageErrorEnum, RolesEnum } from '@/constants/auth.constants'
+import type { RouteRecordName } from 'vue-router'
+
+export class LoginRequest {
+  email?: string
+
+  password?: string
+
+  constructor() {
+    this.email = ''
+    this.password = ''
+  }
+}
+
+export class Tokens {
+  token: string
+
+  refreshToken: string
+
+  constructor() {
+    this.token = ''
+    this.refreshToken = ''
+  }
+}
+
+export type LoginPostResponse = Tokens
+
+export type RefreshPostResponse = Tokens
+
+export class User {
+  email: string
+
+  name: string
+
+  role: RolesEnum
+
+  constructor() {
+    this.email = ''
+    this.name = ''
+    this.role = RolesEnum.VISITOR
+  }
+}
+
+export type UserGetResponse = User
+
+export class AccessDeniedPage {
+  name: RouteRecordName | null | undefined
+
+  error: AccessDeniedPageErrorEnum
+
+  constructor(name: RouteRecordName | null | undefined = null, error = AccessDeniedPageErrorEnum.OK) {
+    this.name = name
+    this.error = error
+  }
+}
+```
+Update `src/models/examples.types.ts`
+```diff
++ export type ExampleLoggedInGetResponse = {
++   message: string
++ }
+```
+Create `src/stores/auth.ts`
+```ts
+import { ref } from 'vue'
+import { defineStore } from 'pinia'
+import { AccessDeniedPage, Tokens, User } from '@/models/auth.types'
+
+export const useAuthStore = defineStore('auth', () => {
+  const isLoggedIn = ref(false)
+  const isRefreshing = ref(false)
+  const isFetchingUserData = ref(false)
+  const accessDeniedPage = ref(new AccessDeniedPage())
+  const tokens = ref(new Tokens())
+  const user = ref<User>()
+
+  function setTokens(tokensValue: Tokens) {
+    tokens.value = tokensValue
+  }
+
+  function setUser(userValue: User) {
+    user.value = userValue
+  }
+
+  function setLoggedIn(isLoggedInValue: boolean) {
+    isLoggedIn.value = isLoggedInValue
+    if (!isLoggedInValue) {
+      tokens.value = new Tokens()
+      user.value = new User()
+    }
+  }
+
+  function setRefreshing(isRefreshingValue: boolean) {
+    isRefreshing.value = isRefreshingValue
+  }
+
+  function setFetchingUserData(isFetchingUserDataValue: boolean) {
+    isFetchingUserData.value = isFetchingUserDataValue
+  }
+
+  function setAccessDeniedPage(accessDeniedPageValue: AccessDeniedPage) {
+    accessDeniedPage.value = accessDeniedPageValue
+  }
+
+  return {
+    accessDeniedPage,
+    isFetchingUserData,
+    isLoggedIn,
+    isRefreshing,
+    tokens,
+    user,
+    setAccessDeniedPage,
+    setFetchingUserData,
+    setLoggedIn,
+    setRefreshing,
+    setTokens,
+    setUser
+  }
+})
+```
+
+Replace `src/services/api.service.ts`
+```ts
+import axios, { AxiosError } from 'axios'
+import { useAuthStore } from '@/stores/auth'
+import { logout, setLocalStorage } from './auth.service'
+
+// api without authorization header
+export const oApi = axios.create({
+  baseURL: import.meta.env.VITE_API_HOST,
+  headers: { 'Content-Type': 'application/json' }
+})
+
+// api with authorization header
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_HOST,
+  headers: { 'Content-Type': 'application/json' }
+})
+
+// add authorization header
+api.interceptors.request.use(
+  (config) => {
+    if (config?.headers) {
+      const auth = useAuthStore()
+      config.headers.Authorization = `Bearer ${auth.tokens.token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// intercept response for error handling
+api.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error: AxiosError) => {
+    console.error('api error', { error })
+    const auth = useAuthStore()
+    const originalRequest = error.config
+    if (!originalRequest) {
+      throw error
+    }
+    if (error.response?.status === 401) {
+      if (!auth.tokens?.refreshToken) {
+        logout()
+        throw error
+      }
+      // call token refresh api
+      if (!auth.isRefreshing) {
+        auth.setRefreshing(true)
+        return oApi
+          .post(`${import.meta.env.VITE_API_HOST}refresh`, {
+            refreshToken: `Basic ${auth.tokens.refreshToken}`
+          })
+          .then((res: any) => {
+            // update tokens and recall original request
+            auth.setTokens(res.data)
+            setLocalStorage()
+            api.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.token
+            return api(originalRequest)
+          })
+          .catch((error: any) => {
+            logout()
+            throw error
+          })
+          .finally(() => {
+            auth.setFetchingUserData(false)
+          })
+      } else {
+        // recall original request when token has been refreshed
+        return new Promise((resolve, reject) => {
+          const unsubscribe = auth.$subscribe(() => {
+            if (!auth.isRefreshing) {
+              unsubscribe()
+              if (auth.isLoggedIn) {
+                return api(originalRequest)
+              }
+              throw error
+            }
+          })
+        })
+      }
+    }
+  }
+)
+export default api
+```
+
+Create `src/services/auth.service.ts`
+```ts
+import { AccessDeniedPage, type LoginRequest } from '@/models/auth.types'
+import { useAuthStore } from '@/stores/auth'
+import router from '@/router'
+import api, { oApi } from '@/services/api.service'
+
+export const login = (formData: LoginRequest) => {
+  const auth = useAuthStore()
+  return oApi
+    .post(`${import.meta.env.VITE_API_HOST}login`, formData)
+    .then((res: any) => {
+      auth.setTokens(res.data)
+      return fetchUserData(true)
+    })
+    .catch((error: any) => {
+      throw error
+    })
+}
+
+export const fetchUserData = (hasForward = false) => {
+  const auth = useAuthStore()
+  auth.setFetchingUserData(true)
+  return api
+    .get(`${import.meta.env.VITE_API_HOST}user`)
+    .then((res: any) => {
+      auth.setUser(res.data)
+      auth.setLoggedIn(true)
+      if (hasForward) {
+        const forwardTo = auth.accessDeniedPage.name || 'main'
+        auth.setAccessDeniedPage(new AccessDeniedPage())
+        router.push({ name: forwardTo })
+      }
+      return res
+    })
+    .catch((error: any) => {
+      throw error
+    })
+    .finally(() => {
+      auth.setFetchingUserData(false)
+    })
+}
+
+export const initAuth = () => {
+  const auth = useAuthStore()
+  if (!auth.user) {
+    getLocalStorage()
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      fetchUserData()
+    }
+  }
+}
+
+export const logout = () => {
+  const auth = useAuthStore()
+  auth.setLoggedIn(false)
+  setLocalStorage()
+  router.push({ name: 'home' })
+}
+
+export const setLocalStorage = () => {
+  const auth = useAuthStore()
+  localStorage.setItem('isLoggedIn', JSON.stringify(auth.isLoggedIn))
+  localStorage.setItem('tokens', JSON.stringify(auth.tokens))
+}
+
+export const getLocalStorage = () => {
+  const auth = useAuthStore()
+  auth.setLoggedIn(localStorage.getItem('isLoggedIn') === 'true')
+  auth.setTokens(JSON.parse(localStorage.getItem('tokens') || '{}'))
+}
+```
+
+Create `src/components/Login/LoginComponent.vue`
+```vue
+<template>
+  <form ref="form" @submit.prevent="submitLogin">
+    <div>
+      <label for="email">Email</label>
+      <input v-model="loginRequest.email" label="email" id="email" name="email" type="email" required />
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input
+        v-model="loginRequest.password"
+        id="password"
+        name="password"
+        :type="isPasswordVisible ? 'text' : 'password'"
+      />
+      <button type="button" @click="isPasswordVisible = !isPasswordVisible">
+        {{ isPasswordVisible ? 'hide password' : 'show password' }}
+      </button>
+    </div>
+    <button type="submit" :disabled="isLoading">{{ isLoading ? 'Loading...' : 'Login' }}</button>
+    <p v-if="auth.accessDeniedPage.error">{{ auth.accessDeniedPage.error }}</p>
+  </form>
+</template>
+
+<script lang="ts" setup>
+import { ref } from 'vue'
+import { LoginRequest } from '@/models/auth.types'
+import { login } from '@/services/auth.service'
+
+const loginRequest = ref(new LoginRequest())
+const isLoading = ref(false)
+const isPasswordVisible = ref(false)
+
+const submitLogin = () => {
+  isLoading.value = true
+  login(loginRequest.value).finally(() => {
+    isLoading.value = false
+  })
+}
+</script>
+```
+Create `src/views/LoginView/LoginView.vue`
+```vue
+<template>
+  <div>
+    <h1>Login</h1>
+    <LoginComponent />
+  </div>
+</template>
+
+<script lang="ts" setup>
+import LoginComponent from '@/components/Login/LoginComponent.vue'
+</script>
+```
+Create `src/views/MainView/MainView.vue`
+```vue
+<template>
+  <div>
+    <h1>Main</h1>
+    <p>{{ query?.data?.message }}</p>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { onBeforeMount, ref } from 'vue'
+import { useQuery } from '@tanstack/vue-query'
+import type { QueryObserverResult } from '@tanstack/vue-query'
+import type { ExampleLoggedInGetResponse } from '@/models/examples.types'
+import api from '@/services/api.service'
+
+const query = ref<QueryObserverResult<ExampleLoggedInGetResponse, Error>>()
+
+const exampleLoggedInFetch = async (): Promise<ExampleLoggedInGetResponse[]> => {
+  try {
+    const response = await api.get('exampleLoggedIn')
+    console.log('response', response)
+    return response.data
+  } catch (error) {
+    console.error(error)
+    return Promise.reject(error)
+  }
+}
+
+onBeforeMount(() => {
+  query.value = useQuery({
+    queryKey: ['exampleLoggedInFetch'],
+    queryFn: exampleLoggedInFetch
+  }) as unknown as QueryObserverResult<ExampleLoggedInGetResponse, Error>
+})
+</script>
+```
+
+Update `src/router/index.ts`
+```diff
++ import { AccessDeniedPageErrorEnum, RolesEnum } from '@/constants/auth.constants'
++ import type { RouteRecordName, RouteLocationNormalized } from 'vue-router'
++ import { AccessDeniedPage } from '@/models/auth.types'
++ import LoginView from '@/views/LoginView/LoginView.vue'
+
+const router = createRouter({
++ {
++   path: '/login',
++   name: 'login',
++   component: LoginView
++ },
+
++ {
++   path: '/main',
++   name: 'main',
++   meta: { roles: [RolesEnum.USER] },
++   component: () => import('@/views/MainView/MainView.vue')
++  }
+
++ // Returns false if the user cannot access this route
++ export function canAccessRoute(name: RouteRecordName | RouteLocationNormalized) {
++   const auth = useAuthStore()
++   const to = typeof name === 'string' ? router.resolve({ name }) : (name as RouteLocationNormalized)
++   return !to.meta.roles || (auth.user?.role && (to.meta.roles as RolesEnum[])?.includes(auth.user.role))
++ }
++
++ router.beforeEach(async (to, from) => {
++   const auth = useAuthStore()
++   // wait if the user data is being fetched
++   if (to.meta.roles && auth.isFetchingUserData) {
++     await new Promise<void>((resolve, reject) => {
++       const unsubscribe = auth.$subscribe(() => {
++         if (!auth.isFetchingUserData) {
++           unsubscribe()
++           resolve()
++         }
++       })
++     })
++   }
++   if (!canAccessRoute(to)) {
++     const accessDeniedPage = new AccessDeniedPage(
++       to.name,
++       auth.isLoggedIn ? AccessDeniedPageErrorEnum.INSUFFICIENT_PERMISSIONS : AccessDeniedPageErrorEnum.NOT_LOGGED_IN
++     )
++     auth.setAccessDeniedPage(accessDeniedPage)
++     return { name: 'login' }
++   }
++   if (to.name !== 'login' && auth.accessDeniedPage.error) {
++     auth.setAccessDeniedPage(new AccessDeniedPage())
++   }
++ })
+```
+
+Update `src/App.vue`
+```diff
++ <router-link v-if="canAccessRoute('main')" to="/main">Main</router-link>
++ <router-link v-if="!auth.isLoggedIn" :to="{ name: 'login' }">Login</router-link>
++ <button v-if="auth.isLoggedIn" @click="logout()">Logout</button>
+
+- <script setup lang="ts" />
++ <script setup lang="ts">
++ import { useAuthStore } from '@/stores/auth'
++ import { initAuth, logout } from '@/services/auth.service'
++ import { canAccessRoute } from '@/router'
+
++ const auth = useAuthStore()
++ initAuth()
++ </script>
+```
+### Vuetify
+Replace template in `src/components/Login/LoginComponent.vue`
+```vue
+<template>
+  <v-form ref="form" @submit.prevent="submitLogin">
+    <v-text-field v-model="loginRequest.email" label="email" type="email" required></v-text-field>
+    <v-text-field
+      v-model="loginRequest.password"
+      :append-inner-icon="isPasswordVisible ? 'mdi-eye' : 'mdi-eye-off'"
+      :type="isPasswordVisible ? 'text' : 'password'"
+      name="password"
+      label="password"
+      @click:append-inner="isPasswordVisible = !isPasswordVisible"
+    ></v-text-field>
+    <v-btn type="submit" :loading="isLoading" :disabled="isLoading">Login</v-btn>
+    <p v-if="auth.accessDeniedPage.error">{{ auth.accessDeniedPage.error }}</p>
+  </v-form>
+</template>
+```
+Update `src/App.vue`
+```diff
+- <router-link v-if="canAccessRoute('main')" to="/main">Main</router-link>
++ <v-btn v-if="canAccessRoute('main')" :to="{ name: 'main' }">Main</v-btn>
+- <router-link v-if="!auth.isLoggedIn" :to="{ name: 'login' }">Login</router-link>
+- <button v-if="auth.isLoggedIn" @click="logout()">Logout</button>
++ <v-btn v-if="!auth.isLoggedIn" :to="{ name: 'login' }" icon="mdi-login" title="Login"></v-btn>
++ <v-btn v-if="auth.isLoggedIn" @click="logout()" icon="mdi-logout" title="Logout"></v-btn>
+```
+### MSW
+Create `.mocks/api/exampleLoggedIn/exampleLoggedIn.json`
+```json
+{
+  "message": "Logged in successfully"
+}
+```
+Create `.mocks/api/exampleLoggedIn/exampleLoggedIn.ts`
+```ts
+import { rest } from 'msw'
+import type { PathParams } from 'msw'
+
+import type { ExampleLoggedInGetResponse } from '@/models/examples.types'
+
+import exampleLoggedIn from './exampleLoggedIn.json'
+
+export const exampleLoggedInGetHandler = rest.get<object, PathParams, ExampleLoggedInGetResponse>(
+  `${import.meta.env.VITE_API_HOST}exampleLoggedIn`,
+  (req, res, ctx) => {
+    return res(ctx.status(200), ctx.delay(500), ctx.json(exampleLoggedIn))
+  }
+)
+
+export default exampleLoggedInGetHandler
+```
+Create `.mocks/api/login/login.json`
+```json
+{
+  "token": "token",
+  "refreshToken": "refreshToken"
+}
+```
+Create `.mocks/api/login/login.ts`
+```ts
+import { rest } from 'msw'
+import type { PathParams } from 'msw'
+
+import login from './login.json'
+import type { LoginPostResponse } from '@/models/auth.types'
+
+export const loginPostHandler = rest.post<
+  object,
+  PathParams,
+  LoginPostResponse
+>(`${import.meta.env.VITE_API_HOST}login`, (req, res, ctx) =>
+  res(ctx.status(200), ctx.delay(500), ctx.json(login))
+)
+
+export default loginPostHandler
+```
+Create `.mocks/api/refresh/refresh.json`
+```json
+{
+  "token": "token",
+  "refreshToken": "refreshToken"
+}
+```
+Create `.mocks/api/refresh/refresh.ts`
+```ts
+import { rest } from 'msw'
+import type { PathParams } from 'msw'
+
+import refresh from './refresh.json'
+import type { RefreshPostResponse } from '@/models/auth.types'
+
+export const refreshPostHandler = rest.post<
+  object,
+  PathParams,
+  RefreshPostResponse
+>(`${import.meta.env.VITE_API_HOST}refresh`, (req, res, ctx) =>
+  res(ctx.status(200), ctx.delay(500), ctx.json(refresh))
+)
+
+export default refreshPostHandler
+```
+Create `.mocks/api/user/user.json.ts`
+```ts
+import { RolesEnum } from '@/constants/auth.constants'
+
+export const user = {
+  email: 'abc123',
+  name: 'User Name',
+  role: RolesEnum.USER
+}
+```
+Create `.mocks/api/user/user.ts`
+```ts
+import { rest } from 'msw'
+import type { PathParams } from 'msw'
+
+import type { UserGetResponse } from '@/models/auth.types'
+
+import { user } from './user.json'
+
+export const userGetHandler = rest.get<object, PathParams, UserGetResponse>(
+  `${import.meta.env.VITE_API_HOST}user`,
+  (req, res, ctx) => res(ctx.status(200), ctx.delay(500), ctx.json(user))
+)
+
+export default userGetHandler
+```
+Update `.mocks/handlers.ts`
+```diff
++ import { exampleLoggedInGetHandler } from './api/exampleLoggedIn/exampleLoggedIn'
++ import { loginPostHandler } from './api/login/login'
++ import { refreshPostHandler } from './api/refresh/refresh'
++ import { userGetHandler } from './api/user/user'
+
+export const handlers = [
++ loginPostHandler,
++ refreshPostHandler,
++ userGetHandler,
+
++ exampleLoggedInGetHandler,
+```
+### Storybook
+```sh
+yarn add -D @storybook/client-api@next
+```
+
+Update `.storybook/preview.ts`
+```diff
++ import { useAuthStore } from '@/stores/auth'
++ import { RolesEnum } from '@/constants/auth.constants'
++ import { FORCE_REMOUNT } from '@storybook/core-events'
++ import { addons } from '@storybook/preview-api'
++ import { useStoryContext } from '@storybook/client-api'
+
+export const globalTypes = {
++ role: {
++   name: 'role',
++   description: 'role',
++   defaultValue: 'visitor',
++   toolbar: {
++     icon: 'user',
++     items: Object.values(RolesEnum).map((item) => (item === '' ? 'visitor' : item))
++ }
+
++ let role = 'visitor'
+export const decorators = [
+
++   if (role !== context.globals.role) {
++     role = context.globals.role
++     const parameters = useStoryContext()
++     addons.getChannel().emit(FORCE_REMOUNT, { storyId: parameters?.id })
++   }
+- return { template: '<div id="app"><story /></div>' }
++ return {
++   setup() {
++     const auth = useAuthStore()
++     auth.setLoggedIn(context.globals.role === 'visitor' ? false : true)
++     auth.setUser({
++       email: 'abc123',
++       name: 'Story Book',
++       role: context.globals.role === 'visitor' ? '' : context.globals.role
++     })
++   },
++   template: `<div id="app"><story /></div>`
++ }
+```
+
+Create `src/components/Login/LoginComponent.stories.ts`
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+
+import LoginComponent from './LoginComponent.vue'
+
+const meta: Meta<typeof LoginComponent> = {
+  /* 👇 The title prop is optional.
+   * See https://storybook.js.org/docs/7.0/vue/configure/overview#configure-story-loading
+   * to learn how to generate automatic titles
+   */
+  title: 'Components/Login',
+  component: LoginComponent,
+  render: (args: any) => ({
+    components: { LoginComponent },
+    setup() {
+      return { args }
+    },
+    template: '<login-component />'
+  }),
+  tags: ['autodocs']
+}
+
+export default meta
+type Story = StoryObj<typeof LoginComponent>
+
+export const Default: Story = {}
+```
+Create `src/views/LoginView/LoginView.stories.ts`
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import router from '@/router'
+
+import LoginView from './LoginView.vue'
+import App from '@/App.vue'
+
+const meta: Meta<typeof LoginView> = {
+  title: 'Views/Login',
+  component: LoginView,
+  render: () => ({
+    components: { LoginView },
+    template: '<login-view />'
+  }),
+  tags: ['autodocs']
+}
+
+export default meta
+type Story = StoryObj<typeof LoginView>
+
+export const Page: Story = {
+  render: () => ({
+    components: { LoginView, App },
+    setup() {
+      router.replace('/login')
+    },
+    template: '<app><login-view /></app>'
+  }),
+  parameters: {
+    layout: 'fullscreen'
+  }
+}
+
+export const Default: Story = {}
+```
+Create `src/components/Login/LoginComponent.stories.ts`
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import router from '@/router'
+
+import MainView from './MainView.vue'
+import App from '@/App.vue'
+
+const meta: Meta<typeof MainView> = {
+  title: 'Views/Main',
+  component: MainView,
+  render: () => ({
+    components: { MainView },
+    template: '<main-view />'
+  }),
+  tags: ['autodocs']
+}
+
+export default meta
+type Story = StoryObj<typeof MainView>
+
+export const Page: Story = {
+  render: () => ({
+    components: { MainView, App },
+    setup() {
+      router.replace('/main')
+    },
+    template: '<app><main-view /></app>'
+  }),
+  parameters: {
+    layout: 'fullscreen'
+  }
+}
+
+export const Default: Story = {}
+```
+
 ## Other libraries
 - [Vueuse](https://vueuse.org/)
 - [dayjs](https://day.js.org/)
@@ -1730,7 +2561,7 @@ Update `package.json`
   - src/assets/styles/base.css
   - src/assets/styles/main.css
 - src/assets/logo.svg
-- src/components/__tests__ (tests are in the components/views folders)
+- src/components/\_\_tests\_\_ (tests are in the components/views folders)
 - src/components/icons
 - src/components/HelloWorld.vue
 - Home page components after updating the home page
@@ -1742,10 +2573,11 @@ Update `package.json`
 ## Folder structure
 - .mocks*
   - api
+  - graphql*
   - handlers.ts
 - .storybook*
   - main.ts
-  - preview-head
+  - preview-head.html
   - preview.ts
 - e2e*
   - *testName*
@@ -1766,17 +2598,23 @@ Update `package.json`
       - *ComponentName*.spec.ts*
       - *ComponentName*.stories.ts*
       - *ComponentName*.vue
+  - constants*
+    - *constantName*.constants.ts*
   - locales*
     - *language*.json
   - models
     - *type*.types.ts
   - plugins
-    - index.ts
     - i18n.ts*
+    - index.ts
+    - pinia.ts*
+    - vuequery.ts*
     - vuetify.ts*
     - webfontloader.ts*
   - router
     - index.ts
+  - services*
+    - *serviceName*.service.ts
   - stores*
     - *storeName*.ts
   - views
@@ -1788,7 +2626,7 @@ Update `package.json`
 - .env
 - .env.example
 - .env.msw*
-- eslintrc.cjs
+- .eslintrc.cjs
 - .gitattributes
 - .gitignore
 - .prettierrc.json
@@ -1801,4 +2639,5 @@ Update `package.json`
 - tsconfig.config.json
 - tsconfig.json
 - tsconfig.vitest.json*
+- vite.config.ts
 - yarn.lock
