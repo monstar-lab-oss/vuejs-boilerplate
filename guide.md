@@ -39,7 +39,7 @@ The file structure of `create vue` is kept, except for the plugins, which are mo
   - [x] [graphql](#graphql-1)
   - [x] [tests](#e2e-tests-1)
   - [x] [other addons](#other-addons)
-- [x] [authentication](#authentication)
+- [x] [authentication](#authentication)*
   - [x] [vuetify](#vuetify-1)
   - [x] [msw](#msw-3)
   - [x] [storybook](#storybook-1)
