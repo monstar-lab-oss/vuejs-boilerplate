@@ -1,0 +1,19 @@
+{
+    "createAccount": "アカウント作成",
+    "completed": "完了",
+    "fetchData": "データ取得",
+    "email": "メール",
+    "emailAlreadyExists": "Email address already exists",
+    "footer": "フッター ©2021",
+    "home": "トップ",
+    "logIn": "ログイン",
+    "password": "パスワード",
+    "userName": "ユーザー名",
+    "signUp": "登録",
+    "submit": "提出",
+    "next": "次",
+    "users": "ユーザー",
+    "results": "{{total}}件",
+    "verify": "確認",
+    "welcome": "ようこそ、{{name}}！"
+}
