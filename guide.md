@@ -48,13 +48,13 @@ The file structure of `create vue` is kept, except for the plugins, which are mo
 - [x] [folder structure](#folder-structure)
 
 ## Todos
+- [ ] import order
 - [ ] vue query response type and refactor graphql example
 - [ ] folder and file naming
 - [ ] write better test and align with storybook
 - [ ] fix playwright chromium with skysea (remove the `--disable-extensions` switch when launching chromium)
 - [ ] fix playwright firefox not using msw
 - [ ] test build
-- [ ] import .mocks data or hardcode in test
 - [ ] prettier differences with autoformat
 - [ ] storybook explanations in readme
 - [ ] fix tsconfig "class" error when adding .storybook to the includes
@@ -63,7 +63,7 @@ The file structure of `create vue` is kept, except for the plugins, which are mo
 
 ## VSC extensions
 - [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-- [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
+- [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
 - [Vue devtools for chrome](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd?hl=en)
 
 ## Create Vue
@@ -94,6 +94,20 @@ npm run lint
 ```
 ```sh
 npm run dev
+```
+
+It is possible that the following error occurs in the `tsconfig.json` files
+```
+Option 'importsNotUsedAsValues' is deprecated and will stop functioning in TypeScript 5.5. Specify compilerOption '"ignoreDeprecations": "5.0"' to silence this error.
+Use 'verbatimModuleSyntax' instead.
+```
+In this case, add to the affected files (see https://github.com/vuejs/tsconfig/issues/6)
+```json
+"compilerOptions": {
+  "preserveValueImports": false,
+  "importsNotUsedAsValues": "remove",
+  "verbatimModuleSyntax": true,
+},
 ```
 
 ## Prettier
@@ -302,6 +316,9 @@ defineProps({
 }
 </style>
 ```
+
+VSCode might show an error with the `@` alias import. this can be solved with `ctrl+shift+p` and `Volar: Restart Vue server`
+
 Create `src/views/ExampleView/ExampleView.vue`
 ```vue
 <template>
@@ -325,6 +342,7 @@ import oApi from '@/services/api.service'
 import type { ExamplesGetResponse } from '@/models/examples.types'
 import ExampleComponent from '@/components/Example/ExampleComponent.vue'
 import { useCounterStore } from '@/stores/counter'
+import axios from 'axios'
 
 const counter = useCounterStore()
 
@@ -337,7 +355,7 @@ async function getExample() {
     query.value = data
     return data
   } catch (error) {
-    if (oApi.isAxiosError(error)) {
+    if (axios.isAxiosError(error)) {
       query.value = { isError: error.message }
       console.log('error message: ', error.message)
       return error.message
@@ -458,7 +476,7 @@ Create `src/assets/styles/_transitions.scss`
   transition: opacity 0.2s ease;
 }
 
-.fade-enter-active:not(:first-of-type) {
+.fade-enter-active:not(:first-child) {
   margin-left: -100%;
 }
 
@@ -642,7 +660,7 @@ Create `src/plugins/pinia.ts`
 import { createPinia } from 'pinia'
 import { PiniaSharedState } from 'pinia-shared-state'
 
-const pinia = createPinia().use(PiniaSharedState({}))
+export const pinia = createPinia().use(PiniaSharedState({}))
 
 export default pinia
 ```
@@ -658,7 +676,7 @@ Update `src/plugins/index.ts`
 ## i18n
 [Vue i18n](https://vue-i18n.intlify.dev/)
 ```sh
-yarn add vue-i18n@9
+yarn add vue-i18n
 ```
 
 Update `tsconfig.app.json`
@@ -691,7 +709,7 @@ import { createI18n } from 'vue-i18n'
 import en from '@/locales/en.json'
 import ja from '@/locales/ja.json'
 
-const i18n = createI18n({
+export const i18n = createI18n({
   locale: 'en',
   fallbackLocale: 'en',
   messages: {
@@ -705,13 +723,28 @@ export default i18n
 Update `src/plugins/index.ts`
 ```diff
 import { createPinia } from 'pinia'
-+ import i18n from "./i18n"
++ import i18n from './i18n'
 
     .use(pinia)
 +   .use(i18n)
 ```
 Update `src/App.vue`
 ### Without Vuetify
+```diff
+- <router-link to="/">Home</router-link>
+- <router-link to="/example">Example</router-link>
++ <router-link to="/">{{ $t('header.home') }}</router-link>
++ <router-link to="/example">{{ $t('header.example') }}</router-link>
+...
++ <select v-model="$i18n.locale">
++   <option v-for="(locale, index) in $i18n.availableLocales" :key="index" :value="locale"
++     :variant="$i18n.locale === locale ? 'tonal' : 'plain'" @click="$i18n.locale = locale">
+      {{ locale }}
+    </option>
++ </select>
+```
+
+### With Vuetify
 ```diff
 +  <v-menu>
 +     <template v-slot:activator="{ props }">
@@ -731,7 +764,7 @@ Update `src/App.vue`
 +   </v-menu>
 + </v-toolbar>
 ```
-### With Vuetify
+
 ```diff
   <v-btn :to="{ name: 'example' }">{{ $t('header.example') }}</v-btn>
 + <v-spacer></v-spacer>
@@ -748,8 +781,17 @@ Create `src/plugins/vuequery.ts`
 ```ts
 import { VueQueryPlugin } from '@tanstack/vue-query'
 
-const vueQuery = (): [any] => {
-  return [VueQueryPlugin]
+export const vueQuery = (): [any, any] => {
+  return [
+    VueQueryPlugin,
+    {
+      queryClientConfig: {
+        defaultOptions: {
+          // Set default options if necessary
+        }
+      }
+    }
+  ]
 }
 
 export default vueQuery
@@ -761,7 +803,7 @@ Update `src/plugins/index.ts`
 + import vueQuery from './vuequery'
 
     .use(pinia)
-+   .use(...vueQuery)
++   .use(...vueQuery())
 ```
 
 Replace `src/views/ExampleView/ExampleView.vue`
@@ -774,13 +816,13 @@ Replace `src/views/ExampleView/ExampleView.vue`
     <button @click="counter.increment">Increment</button>
     <h2>Api call</h2>
     <!-- Loading -->
-    <div v-if="query.isLoading">Loading...</div>
+    <div v-if="query?.isLoading">Loading...</div>
 
     <!-- Error -->
-    <div v-else-if="query.isError">An error has occurred: {{ query.error }}</div>
+    <div v-else-if="query?.isError">An error has occurred: {{ query.error }}</div>
   
     <!-- Result -->
-    <div v-else-if="query.data">
+    <div v-else-if="query?.data">
       <ExampleComponent v-for="example in query.data.data" :key="example.id" :example="example" class="examples" />
     </div>
   </div>
@@ -796,6 +838,7 @@ import ExampleComponent from '@/components/Example/ExampleComponent.vue'
 import { useCounterStore } from '@/stores/counter'
 
 /*
+The commented out code has the following issue:
 The `useQuery` type is `UseQueryReturnType` but causes the template to expect
 `query.data.value` instead of `query.data.data` as is returned by `useQuery`
 
@@ -1314,13 +1357,8 @@ Update `e2e/example/ExampleFlow.spec.ts`
 
 Guide: [Storybook 7 を Vue 3 + TypeScript ではじめよう！](https://zenn.dev/sa2knight/books/storybook-7-with-vue-3)(Japanese only)
 
-*At the time of writing Storybook 7 is still in beta, so `sb@next` needs to be used.*
 ```sh
-npx sb@next init
-```
-otherwise use
-```sh
-npx storybook init
+npx storybook@latest init
 ```
 - Ok to proceed? (y) **y**
 - Do you want to run the 'eslintPlugin' migration on your project? **y**
@@ -1358,12 +1396,6 @@ resolve: {
 +     '@stb': fileURLToPath(new URL('./.storybook', import.meta.url))
     }
   },
-```
-
-Update `.storybook/main.ts`
-```diff
-- import { StorybookConfig } from '@storybook/vue3-vite'
-+ import type { StorybookConfig } from '@storybook/vue3-vite'
 ```
 
 Create `src/components/Example/ExampleComponent.stories.ts`
@@ -1499,6 +1531,34 @@ export const Default: Story = {}
 ```
 
 ### Pinia
+Update `src/plugins/vuequery.ts`
+```diff
+- export const pinia = createPinia().use(PiniaSharedState({}))
++ export const pinia = (isStorybook: boolean): any => {
++  const pinia = createPinia()
++  if (!isStorybook) {
++    pinia.use(PiniaSharedState({}))
++  }
++  return pinia
++ }
+```
+
+Update `src/plugins/index.ts`
+```diff
+- export function registerPlugins(app: App) {
++ export function registerPlugins(app: App, isStorybook = false) {
+
+-   .use(pinia)
++   .use(pinia(isStorybook))
+}
+```
+
+Update `.storybook/preview.ts`
+```diff
+-   registerPlugins(app)
++   registerPlugins(app, true)
+```
+
 Update `src/views/ExampleView/ExampleView.stories.ts`
 ```diff
 + import { useCounterStore } from '@/stores/counter'
@@ -1545,16 +1605,15 @@ Update `.storybook/preview.ts`
 
 Update `src/plugins/vuequery.ts`
 ```diff
-- const vueQuery = (): [any] => {
--   return [VueQueryPlugin]
-+ const vueQuery = (retry: boolean): [any, any] => {
+- export const vueQuery = (): [any, any] => {
++ export const vueQuery = (isStorybook: boolean): [any, any] => {
 +   return [
 +     VueQueryPlugin,
 +     {
 +       queryClientConfig: {
 +         defaultOptions: {
 +           queries: {
-+             retry
++             retry: !isStorybook
 +           }
 +         }
 +       }
@@ -1565,10 +1624,10 @@ Update `src/plugins/vuequery.ts`
 Update `src/plugins/index.ts`
 ```diff
 - export function registerPlugins(app: App) {
-+ export function registerPlugins(app: App, vueQueryRetry = true) {
++ export function registerPlugins(app: App, isStorybook = false) {
 
 -   .use(...vueQuery)
-+   .use(...vueQuery(vueQueryRetry))
++   .use(...vueQuery(isStorybook))
 }
 ```
 
@@ -1580,7 +1639,7 @@ import { registerPlugins } from '../src/plugins'
 + const queryClient = new QueryClient()
 
 -   registerPlugins(app)
-+   registerPlugins(app, false)
++   registerPlugins(app, true)
 +   // cancel queries when navigating between stories
 +   queryClient.cancelQueries()
 ```
