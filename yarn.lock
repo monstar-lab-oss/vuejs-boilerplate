@@ -12470,10 +12470,10 @@ store2@^2.12.0:
   resolved "https://registry.yarnpkg.com/store2/-/store2-2.14.2.tgz#56138d200f9fe5f582ad63bc2704dbc0e4a45068"
   integrity sha512-siT1RiqlfQnGqgT/YzXVUNsom9S0H1OX+dpdGN1xkyYATo4I6sep5NmsRD/40s3IIOvlCq6akxkqG82urIZW1w==
 
-storybook-vue3-router@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/storybook-vue3-router/-/storybook-vue3-router-2.2.1.tgz#9bee7b067fd41a65d3a11fb6bfec27490c0f01f3"
-  integrity sha512-ODAPqGwU9XIMrnudWs6k6rJ0RJAeOGfy1o3vzII2hyMGRPScldA4IlPK4LEFEzdih+B801Yt+MbZ6Lu23FvQFg==
+storybook-vue3-router@2.3.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/storybook-vue3-router/-/storybook-vue3-router-2.3.1.tgz#41b235a16c09787dce8550b43cebff77e04139f4"
+  integrity sha512-e+nhYUoJJCW85TBrKnpaa4Wc6FAiiXFaYFdC49EY7n28jIEabPGq7j1isJN226QfFP45HLpcZb5i8z1Q1+LPUg==
   dependencies:
     vue-router "4.x"
 
