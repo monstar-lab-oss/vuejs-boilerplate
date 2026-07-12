@@ -48,7 +48,7 @@
     "babel-loader": "8.2.3",
     "eslint": "8.9.0",
     "eslint-plugin-import": "2.25.4",
-    "eslint-plugin-vue": "8.5.0",
+    "eslint-plugin-vue": "8.7.1",
     "jest": "27.5.1",
     "msw": "0.36.8",
     "msw-storybook-addon": "1.6.3",
